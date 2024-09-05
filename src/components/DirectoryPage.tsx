@@ -18,6 +18,7 @@ import {
   IconButton,
   Tooltip,
   Button,
+  Skeleton
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import InfoIcon from '@mui/icons-material/Info';
@@ -29,6 +30,9 @@ import SchoolIcon from '@mui/icons-material/School';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import { styled } from '@mui/system';
 import DogBreedDetail from './DogBreedDetail';
+import dynamic from 'next/dynamic';
+import { Suspense } from 'react';
+
 
 interface DogBreed {
   id: string;
@@ -95,7 +99,18 @@ const traits = [
   { name: 'Groom', key: 'Health And Grooming Needs', icon: <BrushIcon sx={{ mr: 1 }} /> },
   { name: 'Train', key: 'Trainability', icon: <SchoolIcon sx={{ mr: 1 }} /> },
 ];
-
+const LoadingSkeleton = () => (
+  <Card>
+    <Skeleton variant="rectangular" height={200} />
+    <CardContent>
+      <Skeleton variant="text" width="80%" />
+      <Skeleton variant="text" width="60%" />
+      {[1, 2, 3, 4, 5].map((item) => (
+        <Skeleton key={item} variant="text" width="100%" />
+      ))}
+    </CardContent>
+  </Card>
+);
 export default function DirectoryPage({ initialDogBreeds }: { initialDogBreeds: ApiResponse }) {
   const [dogs, setDogs] = useState<DogBreed[]>(initialDogBreeds.dogBreeds);
   const [loading, setLoading] = useState(false);
@@ -135,7 +150,7 @@ export default function DirectoryPage({ initialDogBreeds }: { initialDogBreeds: 
       fetchDogs(1, true);
     }
   }, [fetchDogs, searchTerm]);
-  
+
   const handleOpenDetail = (dog: DogBreed) => {
     setSelectedDog(dog);
   };
@@ -173,12 +188,10 @@ export default function DirectoryPage({ initialDogBreeds }: { initialDogBreeds: 
         />
       </Box>
 
-      {loading && dogs.length === 0 ? (
-        <CircularProgress />
-      ) : (
-        <GridContainer>
-          {dogs.map((dog) => (
-            <StyledCard key={dog.id} onClick={() => handleOpenDetail(dog)}>
+      <GridContainer>
+        {dogs.map((dog) => (
+          <Fade key={dog._id} in={true} timeout={500}>
+            <StyledCard onClick={() => handleOpenDetail(dog)}>
               <StyledCardMedia
                 image={dog.FeaturedImageURL}
                 title={dog['Dog Name']}
@@ -210,9 +223,12 @@ export default function DirectoryPage({ initialDogBreeds }: { initialDogBreeds: 
                 ))}
               </StyledCardContent>
             </StyledCard>
-          ))}
-        </GridContainer>
-      )}
+          </Fade>
+        ))}
+        {loading && Array.from(new Array(4)).map((_, index) => (
+          <LoadingSkeleton key={index} />
+        ))}
+      </GridContainer>
 
       {page < totalPages && (
         <Box sx={{ textAlign: 'center', mt: 2 }}>
@@ -222,11 +238,15 @@ export default function DirectoryPage({ initialDogBreeds }: { initialDogBreeds: 
         </Box>
       )}
 
-      <DogBreedDetail 
-        dog={selectedDog} 
-        open={!!selectedDog} 
-        onClose={handleCloseDetail} 
-      />
+      <Suspense fallback={<CircularProgress />}>
+        {selectedDog && (
+          <DogBreedDetail 
+            dog={selectedDog} 
+            open={!!selectedDog} 
+            onClose={handleCloseDetail} 
+          />
+        )}
+      </Suspense>
     </Box>
   );
 }
