@@ -53,11 +53,8 @@ export async function POST(request: Request) {
     const db = client.db("dogBreedRecommender");
     const collection = db.collection("dogBreeds");
 
-    // Convert quiz answers to database query
-    const query = buildQueryFromAnswers(quizAnswers);
-
-    // Find matching dog breeds
-    const dogBreeds = await collection.find(query).toArray();
+    // Find all dog breeds (we'll filter in memory for more precise control)
+    const dogBreeds = await collection.find({}).toArray();
 
     // Score each breed based on how well it matches the user's preferences
     const scoredBreeds = dogBreeds.map(breed => ({
@@ -76,23 +73,22 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Failed to fetch dog breed recommendations' }, { status: 500 });
   }
 }
-
 function buildQueryFromAnswers(quizAnswers: any) {
   const query: any = {};
 
   // Basic filtering to reduce the initial dataset
   if (quizAnswers.size_preference === 'small') {
-    query['Size'] = { $lte: 2 };
+    query['Size'] = { $lte: "2" };
   } else if (quizAnswers.size_preference === 'large' || quizAnswers.size_preference === 'extra_large') {
-    query['Size'] = { $gte: 4 };
+    query['Size'] = { $gte: "4" };
   }
 
   if (quizAnswers.health_concerns === 'allergies') {
-    query['Amount Of Shedding'] = { $lte: 2 };
+    query['Amount Of Shedding'] = { $lte: "2" };
   }
 
   if (quizAnswers.living_situation === 'apartment') {
-    query['Adapts Well To Apartment Living'] = { $gte: 3 };
+    query['Adapts Well To Apartment Living'] = { $gte: "3" };
   }
 
   // Add filter for officially recognized breeds if specified
@@ -105,110 +101,91 @@ function buildQueryFromAnswers(quizAnswers: any) {
 
 function calculateBreedScore(breed: any, preferences: any): number {
   let score = 0;
+  const weights: { [key: string]: number } = {};
+
+  // Helper function to convert string to number safely
+  const toNumber = (value: string): number => {
+    const num = Number(value);
+    return isNaN(num) ? 0 : num;
+  };
+
+  // Helper function to calculate score based on preference match
+  const calculateMatchScore = (breedValue: number, preferenceValue: number, weight: number) => {
+    const difference = Math.abs(breedValue - preferenceValue);
+    return Math.max(5 - difference, 0) * weight;
+  };
+
+  // Set weights based on user preferences
+  weights.size = preferences.size_preference === 'no_preference' ? 1 : 2;
+  weights.energy = preferences.activity_level === 'no_preference' ? 1 : 2;
+  weights.grooming = preferences.grooming_preference === 'no_preference' ? 1 : 2;
+  weights.trainability = preferences.trainability_importance === 'not_important' ? 1 : 2;
+  weights.barking = preferences.barking_tolerance === 'no_preference' ? 1 : 2;
+
+  // Size preference
+  const sizeMap = { 'small': 1, 'medium': 2, 'large': 3, 'extra_large': 4 };
+  const preferredSize = sizeMap[preferences.size_preference] || 2.5;
+  score += calculateMatchScore(toNumber(breed['Size']), preferredSize, weights.size);
+
+  // Energy level and exercise needs
+  const energyMap = { 'sedentary': 1, 'moderate': 3, 'very_active': 5 };
+  const preferredEnergy = energyMap[preferences.activity_level] || 3;
+  score += calculateMatchScore(toNumber(breed['Energy Level']), preferredEnergy, weights.energy);
+  score += calculateMatchScore(toNumber(breed['Exercise needs']), preferredEnergy, weights.energy);
+
+  // Grooming needs
+  const groomingMap = { 'low_maintenance': 1, 'moderate_grooming': 3, 'high_maintenance': 5 };
+  const preferredGrooming = groomingMap[preferences.grooming_preference] || 3;
+  score += calculateMatchScore(toNumber(breed['Health And Grooming Needs']), preferredGrooming, weights.grooming);
+
+  // Trainability
+  const trainabilityMap = { 'not_important': 1, 'somewhat_important': 3, 'very_important': 5 };
+  const preferredTrainability = trainabilityMap[preferences.trainability_importance] || 3;
+  score += calculateMatchScore(toNumber(breed['Trainability']), preferredTrainability, weights.trainability);
+
+  // Barking tendency
+  const barkingMap = { 'minimal': 1, 'some_barking': 3, 'frequent_barking': 5 };
+  const preferredBarking = barkingMap[preferences.barking_tolerance] || 3;
+  score += calculateMatchScore(toNumber(breed['Tendency To Bark Or Howl']), preferredBarking, weights.barking);
 
   // Living situation
   if (preferences.living_situation === 'apartment') {
-    score += breed['Adapts Well To Apartment Living'] * 2;
-  } else {
-    score += breed['Adapts Well To Apartment Living'];
+    score += toNumber(breed['Adapts Well To Apartment Living']) * 2;
   }
-
-  // Activity level and exercise needs
-  const activityLevel = preferences.activity_level;
-  const exerciseScore = breed['Exercise needs'] * 2;
-  if (activityLevel === 'sedentary' && exerciseScore <= 6) score += 10;
-  else if (activityLevel === 'moderate' && exerciseScore > 6 && exerciseScore <= 8) score += 10;
-  else if (activityLevel === 'very_active' && exerciseScore > 8) score += 10;
-
-  // Time commitment
-  const timeCommitment = preferences.time_commitment;
-  const energyScore = breed['Energy Level'] * 2;
-  if (timeCommitment === 'minimal' && energyScore <= 6) score += 10;
-  else if (timeCommitment === 'moderate' && energyScore > 6 && energyScore <= 8) score += 10;
-  else if (timeCommitment === 'extensive' && energyScore > 8) score += 10;
-
-  // Experience level
-  if (preferences.experience === 'first_time' && breed['Good For Novice Owners'] >= 4) score += 10;
 
   // Family situation
-  if (preferences.family_situation === 'family_young_children' && breed['Kid-Friendly'] >= 4) score += 10;
-
-  // Other pets
-  if (preferences.other_pets === 'dogs' && breed['Dog Friendly'] >= 4) score += 5;
-  if (preferences.other_pets === 'cats' && breed['Dog Friendly'] >= 3) score += 5;
-
-  // Grooming and shedding
-  const groomingPreference = preferences.grooming_preference;
-  const groomingScore = 6 - breed['Easy To Groom']; // Invert so higher is easier
-  if (groomingPreference === 'low_maintenance' && groomingScore >= 4) score += 10;
-  else if (groomingPreference === 'moderate_grooming' && groomingScore >= 3) score += 10;
-  else if (groomingPreference === 'high_maintenance') score += 10;
-
-  const sheddingTolerance = preferences.shedding_tolerance;
-  const sheddingScore = breed['Amount Of Shedding'];
-  if (sheddingTolerance === 'no_shedding' && sheddingScore <= 2) score += 10;
-  else if (sheddingTolerance === 'some_shedding' && sheddingScore <= 3) score += 10;
-  else if (sheddingTolerance === 'heavy_shedding') score += 10;
-
-  // Size preference
-  const sizePreference = preferences.size_preference;
-  const sizeScore = breed['Size'];
-  if (sizePreference === 'small' && sizeScore <= 2) score += 10;
-  else if (sizePreference === 'medium' && sizeScore > 2 && sizeScore <= 3) score += 10;
-  else if (sizePreference === 'large' && sizeScore > 3 && sizeScore <= 4) score += 10;
-  else if (sizePreference === 'extra_large' && sizeScore > 4) score += 10;
-
-  // Trainability
-  const trainabilityImportance = preferences.trainability_importance;
-  const trainabilityScore = breed['Trainability'];
-  if (trainabilityImportance === 'very_important' && trainabilityScore >= 4) score += 10;
-  else if (trainabilityImportance === 'somewhat_important' && trainabilityScore >= 3) score += 10;
-  else if (trainabilityImportance === 'not_important') score += 10;
-
-  // Energy level
-  const energyPreference = preferences.energy_level;
-  const energyLevelScore = breed['Energy Level'];
-  if (energyPreference === 'low' && energyLevelScore <= 2) score += 10;
-  else if (energyPreference === 'moderate' && energyLevelScore > 2 && energyLevelScore <= 3) score += 10;
-  else if (energyPreference === 'high' && energyLevelScore > 3) score += 10;
-
-  // Barking tolerance
-  const barkingTolerance = preferences.barking_tolerance;
-  const barkingScore = breed['Tendency To Bark Or Howl'];
-  if (barkingTolerance === 'minimal' && barkingScore <= 2) score += 10;
-  else if (barkingTolerance === 'some_barking' && barkingScore <= 3) score += 10;
-  else if (barkingTolerance === 'frequent_barking') score += 10;
-
-  // Climate
-  const climate = preferences.climate;
-  if (climate === 'cold' && breed['Tolerates Cold Weather'] >= 4) score += 5;
-  if (climate === 'hot' && breed['Tolerates Hot Weather'] >= 4) score += 5;
-
-  // Lifestyle activities
-  const lifestyle = preferences.lifestyle;
-  if (lifestyle === 'cuddles' && breed['Affectionate with Family'] >= 4) score += 5;
-  if (lifestyle === 'walks' && breed['Energy Level'] >= 3) score += 5;
-  if (lifestyle === 'jogging' && breed['Energy Level'] >= 4) score += 5;
-  if (lifestyle === 'hiking' && breed['Energy Level'] >= 4 && breed['Intensity'] >= 4) score += 5;
-  if (lifestyle === 'dog_sports' && breed['Trainability'] >= 4 && breed['Energy Level'] >= 4) score += 5;
-
-  // Health concerns
-  const healthConcerns = preferences.health_concerns;
-  if (healthConcerns === 'hypoallergenic' && breed['Amount Of Shedding'] <= 2) score += 10;
-  if (healthConcerns === 'minimal_health_issues' && breed['General Health'] >= 4) score += 10;
-
-  // Official recognition
-  const officialRecognition = preferences.official_recognition;
-  if (officialRecognition === 'Yes, I prefer officially recognized breeds' && breed['Officially Recognized'] === 'Yes') {
-    score += 10;
-  } else if (officialRecognition === 'No, I\'m open to all breeds') {
-    score += 5; // Give a slight preference to all breeds
+  if (preferences.family_situation === 'family_young_children') {
+    score += toNumber(breed['Kid-Friendly']) * 2;
   }
 
-  // Additional factors
-  score += breed['Adaptability'] * 2;
-  score += breed['All-around friendliness'] * 2;
-  score += breed['Potential For Playfulness'] * 2;
+  // Other pets
+  if (preferences.other_pets === 'dogs') {
+    score += toNumber(breed['Dog Friendly']) * 1.5;
+  }
+  if (preferences.other_pets === 'cats') {
+    score += toNumber(breed['Dog Friendly']) * 1.5; // Assuming dog-friendly dogs are also generally cat-friendly
+  }
+
+  // Climate
+  if (preferences.climate === 'cold') {
+    score += toNumber(breed['Tolerates Cold Weather']) * 1.5;
+  }
+  if (preferences.climate === 'hot') {
+    score += toNumber(breed['Tolerates Hot Weather']) * 1.5;
+  }
+
+  // Health concerns
+  if (preferences.health_concerns === 'hypoallergenic') {
+    score += (5 - toNumber(breed['Amount Of Shedding'])) * 2; // Invert shedding score for hypoallergenic
+  }
+  if (preferences.health_concerns === 'minimal_health_issues') {
+    score += toNumber(breed['General Health']) * 2;
+  }
+
+  // Official recognition
+  if (preferences.official_recognition === 'Yes, I prefer officially recognized breeds' && breed['Officially Recognized'] === 'Yes') {
+    score += 10;
+  }
 
   return score;
 }
