@@ -1,6 +1,12 @@
 // src/app/page.tsx
-import { Metadata } from 'next'
-import HomePage from '@/components/HomePage'
+import dynamic from 'next/dynamic';
+import { Suspense } from 'react';
+import { CircularProgress } from '@mui/material';
+import { Metadata } from 'next';
+
+const HomePage = dynamic(() => import('@/components/HomePage'), {
+  loading: () => <CircularProgress />,
+});
 
 export const metadata: Metadata = {
   title: 'Dog Breed Recommender - Find Your Perfect Canine Companion',
@@ -8,5 +14,9 @@ export const metadata: Metadata = {
 }
 
 export default function Home() {
-  return <HomePage />
+  return (
+    <Suspense fallback={<CircularProgress />}>
+      <HomePage />
+    </Suspense>
+  );
 }

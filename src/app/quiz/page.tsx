@@ -2,23 +2,19 @@
 
 'use client';
 
-import React from 'react';
-import { Box } from '@mui/material';
-import QuizPage from '@/components/QuizPage';
+// src/app/quiz/page.tsx
+import dynamic from 'next/dynamic';
+import { Suspense } from 'react';
+import { CircularProgress } from '@mui/material';
+
+const QuizPage = dynamic(() => import('@/components/QuizPage'), {
+  loading: () => <CircularProgress />,
+});
 
 export default function QuizPageWrapper() {
   return (
-    <Box
-      sx={{
-        minHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '2rem 0',
-      }}
-    >
+    <Suspense fallback={<CircularProgress />}>
       <QuizPage />
-    </Box>
+    </Suspense>
   );
 }
