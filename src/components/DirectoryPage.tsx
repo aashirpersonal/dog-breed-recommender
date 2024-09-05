@@ -96,13 +96,13 @@ const traits = [
   { name: 'Train', key: 'Trainability', icon: <SchoolIcon sx={{ mr: 1 }} /> },
 ];
 
-export default function DirectoryPage() {
-  const [dogs, setDogs] = useState<DogBreed[]>([]);
-  const [loading, setLoading] = useState(true);
+export default function DirectoryPage({ initialDogBreeds }: { initialDogBreeds: ApiResponse }) {
+  const [dogs, setDogs] = useState<DogBreed[]>(initialDogBreeds.dogBreeds);
+  const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDog, setSelectedDog] = useState<DogBreed | null>(null);
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  const [totalPages, setTotalPages] = useState(initialDogBreeds.totalPages);
 
   const fetchDogs = useCallback(async (pageNum: number, resetDogs: boolean = false) => {
     setLoading(true);
@@ -118,9 +118,9 @@ export default function DirectoryPage() {
       }
       const data: ApiResponse = await response.json();
       if (resetDogs) {
-        setDogs(data.dogBreeds.map(dog => ({ ...dog, id: dog._id })));
+        setDogs(data.dogBreeds);
       } else {
-        setDogs(prevDogs => [...prevDogs, ...data.dogBreeds.map(dog => ({ ...dog, id: dog._id }))]);
+        setDogs(prevDogs => [...prevDogs, ...data.dogBreeds]);
       }
       setTotalPages(data.totalPages);
     } catch (e) {
@@ -131,9 +131,11 @@ export default function DirectoryPage() {
   }, [searchTerm]);
 
   useEffect(() => {
-    fetchDogs(1, true);
-  }, [fetchDogs]);
-
+    if (searchTerm) {
+      fetchDogs(1, true);
+    }
+  }, [fetchDogs, searchTerm]);
+  
   const handleOpenDetail = (dog: DogBreed) => {
     setSelectedDog(dog);
   };
