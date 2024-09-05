@@ -8,16 +8,15 @@ import {
   Toolbar,
   Typography,
   Button,
-  IconButton,
   Box,
   useMediaQuery,
   Theme,
+  IconButton,
   Menu,
   MenuItem,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import MenuIcon from '@mui/icons-material/Menu';
-import PetsIcon from '@mui/icons-material/Pets';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -39,12 +38,12 @@ const Header: React.FC = () => {
     { label: 'Home', path: '/' },
     { label: 'Directory', path: '/directory' },
     { label: 'Quiz', path: '/quiz' },
+    { label: 'How It Works', path: '/how-it-works' },
   ];
 
   return (
     <AppBar position="static">
       <Toolbar>
-        <PetsIcon sx={{ mr: 2 }} />
         <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
           Dog Breed Recommender
         </Typography>

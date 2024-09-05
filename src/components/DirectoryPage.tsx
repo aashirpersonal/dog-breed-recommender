@@ -1,4 +1,5 @@
 // src/components/DirectoryPage.tsx
+
 "use client"
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
@@ -16,19 +17,13 @@ import {
   LinearProgress,
   IconButton,
   Tooltip,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  SelectChangeEvent,
   Button,
-  Badge,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import InfoIcon from '@mui/icons-material/Info';
 import PetsIcon from '@mui/icons-material/Pets';
-import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import FavoriteIcon from '@mui/icons-material/Favorite';
+import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import BrushIcon from '@mui/icons-material/Brush';
 import SchoolIcon from '@mui/icons-material/School';
 import VerifiedIcon from '@mui/icons-material/Verified';
@@ -45,8 +40,7 @@ interface DogBreed {
   'Health And Grooming Needs': string;
   Trainability: string;
   FeaturedImageURL: string;
-  'Officially Recognized': string; // Add this line
-
+  'Officially Recognized': string;
 }
 
 interface ApiResponse {
@@ -58,48 +52,42 @@ interface ApiResponse {
 }
 
 const GridContainer = styled('div')({
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
-    gap: '16px',
-    padding: '16px',
-  });
-  
-  const StyledCard = styled(Card)({
-    display: 'flex',
-    flexDirection: 'column',
-    height: '100%',
-  });
-  
-  const StyledCardMedia = styled(CardMedia)({
-    paddingTop: '75%', // 4:3 aspect ratio
-  });
-  
-  const StyledCardContent = styled(CardContent)({
-    flexGrow: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    padding: '12px',
-  });
-    const StyledBadge = styled(Badge)(({ theme }) => ({
-    '& .MuiBadge-badge': {
-      right: 16,
-      top: 16,
-      border: `2px solid ${theme.palette.background.paper}`,
-      padding: '0 4px',
-    },
-  }));
-  const TraitBar = ({ trait, value, icon }) => (
-    <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-      {icon}
-      <Typography variant="body2" noWrap sx={{ width: '30%', ml: 1 }}>{trait}</Typography>
-      <LinearProgress 
-        variant="determinate" 
-        value={Number(value) * 20} 
-        sx={{ flexGrow: 1, mr: 1 }} 
-      />
-      <Typography variant="body2">{value}/5</Typography>
-    </Box>
-  );
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
+  gap: '16px',
+  padding: '16px',
+});
+
+const StyledCard = styled(Card)({
+  display: 'flex',
+  flexDirection: 'column',
+  height: '100%',
+});
+
+const StyledCardMedia = styled(CardMedia)({
+  paddingTop: '75%', // 4:3 aspect ratio
+});
+
+const StyledCardContent = styled(CardContent)({
+  flexGrow: 1,
+  display: 'flex',
+  flexDirection: 'column',
+  padding: '12px',
+});
+
+const TraitBar = ({ trait, value, icon }) => (
+  <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+    {icon}
+    <Typography variant="body2" noWrap sx={{ width: '30%', ml: 1 }}>{trait}</Typography>
+    <LinearProgress 
+      variant="determinate" 
+      value={Number(value) * 20} 
+      sx={{ flexGrow: 1, mr: 1 }} 
+    />
+    <Typography variant="body2">{value}/5</Typography>
+  </Box>
+);
+
 const traits = [
   { name: 'Adapt', key: 'Adaptability', icon: <PetsIcon sx={{ mr: 1 }} /> },
   { name: 'Friendly', key: 'All-around friendliness', icon: <FavoriteIcon sx={{ mr: 1 }} /> },
@@ -112,7 +100,6 @@ export default function DirectoryPage() {
   const [dogs, setDogs] = useState<DogBreed[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filters, setFilters] = useState<Record<string, string>>({});
   const [selectedDog, setSelectedDog] = useState<DogBreed | null>(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -123,7 +110,7 @@ export default function DirectoryPage() {
       const queryParams = new URLSearchParams({
         page: pageNum.toString(),
         limit: '12',
-        ...filters
+        search: searchTerm
       });
       const response = await fetch(`/api/dogBreeds?${queryParams}`);
       if (!response.ok) {
@@ -141,27 +128,11 @@ export default function DirectoryPage() {
     } finally {
       setLoading(false);
     }
-  }, [filters]);
+  }, [searchTerm]);
 
   useEffect(() => {
     fetchDogs(1, true);
   }, [fetchDogs]);
-
-  const handleFilterChange = (event: SelectChangeEvent) => {
-    const { name, value } = event.target;
-    setFilters(prev => {
-      const newFilters = { ...prev, [name]: value };
-      if (value === 'all') {
-        delete newFilters[name];
-      }
-      return newFilters;
-    });
-    setPage(1);
-  };
-
-  useEffect(() => {
-    fetchDogs(1, true);
-  }, [filters, fetchDogs]);
 
   const handleOpenDetail = (dog: DogBreed) => {
     setSelectedDog(dog);
@@ -177,9 +148,10 @@ export default function DirectoryPage() {
     fetchDogs(nextPage, false);
   };
 
-  const filteredDogs = dogs.filter(dog => 
-    dog['Dog Name'].toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(event.target.value);
+    setPage(1);
+  };
 
   return (
     <Box sx={{ maxWidth: 'xl', margin: 'auto', padding: 2 }}>
@@ -187,40 +159,23 @@ export default function DirectoryPage() {
         Dog Breed Directory
       </Typography>
       
-      {/* Search and filter controls */}
-      <Box sx={{ mb: 2, display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+      <Box sx={{ mb: 2 }}>
         <TextField
+          fullWidth
           placeholder="Search breeds..."
           InputProps={{
             startAdornment: <InputAdornment position="start"><SearchIcon /></InputAdornment>,
           }}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          sx={{ flexGrow: 1 }}
+          onChange={handleSearch}
+          value={searchTerm}
         />
-        {traits.map(trait => (
-          <FormControl key={trait.key} sx={{ minWidth: 120 }}>
-            <InputLabel>{trait.name}</InputLabel>
-            <Select
-              value={filters[trait.key] || 'all'}
-              onChange={handleFilterChange}
-              label={trait.name}
-              name={trait.key}
-            >
-              <MenuItem value="all">All</MenuItem>
-              {['1', '2', '3', '4', '5'].map(value => (
-                <MenuItem key={value} value={value}>{value}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        ))}
       </Box>
 
-      {/* Dog breed cards */}
       {loading && dogs.length === 0 ? (
         <CircularProgress />
       ) : (
         <GridContainer>
-          {filteredDogs.map((dog) => (
+          {dogs.map((dog) => (
             <StyledCard key={dog.id} onClick={() => handleOpenDetail(dog)}>
               <StyledCardMedia
                 image={dog.FeaturedImageURL}
@@ -257,7 +212,6 @@ export default function DirectoryPage() {
         </GridContainer>
       )}
 
-      {/* Load more button */}
       {page < totalPages && (
         <Box sx={{ textAlign: 'center', mt: 2 }}>
           <Button variant="contained" onClick={handleLoadMore} disabled={loading}>
@@ -266,7 +220,6 @@ export default function DirectoryPage() {
         </Box>
       )}
 
-      {/* Dog breed detail modal */}
       <DogBreedDetail 
         dog={selectedDog} 
         open={!!selectedDog} 
