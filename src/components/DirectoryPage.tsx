@@ -1,7 +1,7 @@
 // src/components/DirectoryPage.tsx
+'use client'
 
-"use client"
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { 
   Typography, 
   Container, 
@@ -17,8 +17,8 @@ import {
   LinearProgress,
   IconButton,
   Tooltip,
-  Button,
-  Skeleton
+  Pagination,
+  Skeleton,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import InfoIcon from '@mui/icons-material/Info';
@@ -29,13 +29,15 @@ import BrushIcon from '@mui/icons-material/Brush';
 import SchoolIcon from '@mui/icons-material/School';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import { styled } from '@mui/system';
-import DogBreedDetail from './DogBreedDetail';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
-import { Suspense } from 'react';
 
+const DogBreedDetail = dynamic(() => import('./DogBreedDetail'), {
+  loading: () => <CircularProgress />,
+});
 
 interface DogBreed {
-  id: string;
+  _id: string;
   'Dog Name': string;
   Temperament: string;
   Adaptability: string;
@@ -66,6 +68,10 @@ const StyledCard = styled(Card)({
   display: 'flex',
   flexDirection: 'column',
   height: '100%',
+  transition: 'transform 0.3s ease-in-out',
+  '&:hover': {
+    transform: 'scale(1.03)',
+  },
 });
 
 const StyledCardMedia = styled(CardMedia)({
@@ -99,6 +105,7 @@ const traits = [
   { name: 'Groom', key: 'Health And Grooming Needs', icon: <BrushIcon sx={{ mr: 1 }} /> },
   { name: 'Train', key: 'Trainability', icon: <SchoolIcon sx={{ mr: 1 }} /> },
 ];
+
 const LoadingSkeleton = () => (
   <Card>
     <Skeleton variant="rectangular" height={200} />
@@ -111,45 +118,65 @@ const LoadingSkeleton = () => (
     </CardContent>
   </Card>
 );
+
 export default function DirectoryPage({ initialDogBreeds }: { initialDogBreeds: ApiResponse }) {
   const [dogs, setDogs] = useState<DogBreed[]>(initialDogBreeds.dogBreeds);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDog, setSelectedDog] = useState<DogBreed | null>(null);
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(initialDogBreeds.page);
   const [totalPages, setTotalPages] = useState(initialDogBreeds.totalPages);
 
-  const fetchDogs = useCallback(async (pageNum: number, resetDogs: boolean = false) => {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const fetchDogs = useCallback(async (pageNum: number, search: string) => {
     setLoading(true);
     try {
-      const queryParams = new URLSearchParams({
-        page: pageNum.toString(),
-        limit: '12',
-        search: searchTerm
-      });
-      const response = await fetch(`/api/dogBreeds?${queryParams}`);
+      const queryParams = new URLSearchParams();
+      queryParams.set('page', pageNum.toString());
+      queryParams.set('limit', '12');
+      if (search) queryParams.set('search', search);
+
+      const response = await fetch(`/api/dogBreeds?${queryParams.toString()}`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data: ApiResponse = await response.json();
-      if (resetDogs) {
-        setDogs(data.dogBreeds);
-      } else {
-        setDogs(prevDogs => [...prevDogs, ...data.dogBreeds]);
-      }
+      setDogs(data.dogBreeds);
       setTotalPages(data.totalPages);
+      setPage(data.page);
     } catch (e) {
       console.error('Error fetching data:', e);
     } finally {
       setLoading(false);
     }
-  }, [searchTerm]);
+  }, []);
 
   useEffect(() => {
-    if (searchTerm) {
-      fetchDogs(1, true);
+    const currentPage = Number(searchParams.get('page')) || 1;
+    const currentSearch = searchParams.get('search') || '';
+    if (currentPage !== page || currentSearch !== searchTerm) {
+      fetchDogs(currentPage, currentSearch);
     }
-  }, [fetchDogs, searchTerm]);
+  }, [fetchDogs, searchParams, page, searchTerm]);
+
+  const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
+    const queryParams = new URLSearchParams(searchParams);
+    queryParams.set('page', value.toString());
+    router.push(`${pathname}?${queryParams.toString()}`);
+  };
+
+  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newSearchTerm = event.target.value;
+    setSearchTerm(newSearchTerm);
+    const queryParams = new URLSearchParams(searchParams);
+    queryParams.set('page', '1');
+    if (newSearchTerm) queryParams.set('search', newSearchTerm);
+    else queryParams.delete('search');
+    router.push(`${pathname}?${queryParams.toString()}`);
+  };
 
   const handleOpenDetail = (dog: DogBreed) => {
     setSelectedDog(dog);
@@ -157,17 +184,6 @@ export default function DirectoryPage({ initialDogBreeds }: { initialDogBreeds: 
 
   const handleCloseDetail = () => {
     setSelectedDog(null);
-  };
-
-  const handleLoadMore = () => {
-    const nextPage = page + 1;
-    setPage(nextPage);
-    fetchDogs(nextPage, false);
-  };
-
-  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(event.target.value);
-    setPage(1);
   };
 
   return (
@@ -230,13 +246,16 @@ export default function DirectoryPage({ initialDogBreeds }: { initialDogBreeds: 
         ))}
       </GridContainer>
 
-      {page < totalPages && (
-        <Box sx={{ textAlign: 'center', mt: 2 }}>
-          <Button variant="contained" onClick={handleLoadMore} disabled={loading}>
-            {loading ? 'Loading...' : 'Load More'}
-          </Button>
-        </Box>
-      )}
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+        <Pagination 
+          count={totalPages} 
+          page={page} 
+          onChange={handlePageChange}
+          color="primary"
+          size="large"
+          disabled={loading}
+        />
+      </Box>
 
       <Suspense fallback={<CircularProgress />}>
         {selectedDog && (

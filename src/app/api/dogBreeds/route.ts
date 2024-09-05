@@ -28,8 +28,13 @@ export async function GET(request: Request) {
     const dogBreeds = await collection.find(query).skip(skip).limit(limit).toArray();
     const total = await collection.countDocuments(query);
 
+    const serializedDogBreeds = dogBreeds.map(breed => ({
+      ...breed,
+      _id: breed._id.toString(),
+    }));
+
     return NextResponse.json({ 
-      dogBreeds, 
+      dogBreeds: serializedDogBreeds, 
       total,
       page,
       limit,
@@ -40,7 +45,6 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Failed to fetch dog breeds', details: e.message }, { status: 500 });
   }
 }
-
 export async function POST(request: Request) {
   const quizAnswers = await request.json();
   
