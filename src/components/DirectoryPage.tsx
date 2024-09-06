@@ -33,7 +33,7 @@ import { styled } from '@mui/system';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { DogBreed, PaginatedDogBreeds } from '@/types';  // Import both types
-
+import Image from 'next/image';
 const DogBreedDetail = dynamic(() => import('./DogBreedDetail'), {
   loading: () => <CircularProgress />,
 });
@@ -62,7 +62,11 @@ const StyledCard = styled(Card)({
     transform: 'scale(1.03)',
   },
 });
-
+const ImageWrapper = styled('div')({
+  position: 'relative',
+  width: '100%',
+  paddingTop: '75%', // 4:3 aspect ratio
+});
 const StyledCardMedia = styled(CardMedia)({
   paddingTop: '75%', // 4:3 aspect ratio
 });
@@ -203,10 +207,16 @@ export default function DirectoryPage({ initialDogBreeds }: { initialDogBreeds: 
         {dogs.map((dog) => (
           <Fade key={dog._id} in={true} timeout={500}>
             <StyledCard onClick={() => handleOpenDetail(dog)}>
-              <StyledCardMedia
-                image={dog.FeaturedImageURL}
-                title={dog['Dog Name']}
-              />
+            <ImageWrapper>
+  <Image
+    src={dog.FeaturedImageURL}
+    alt={dog['Dog Name']}
+    fill // replaces layout="fill"
+    style={{ objectFit: "cover" }} // replaces objectFit="cover"
+    placeholder="blur"
+    blurDataURL="/placeholder.png" // Replace with an actual placeholder image
+  />
+</ImageWrapper>
               <StyledCardContent>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                   <Typography variant="h6" component="div" noWrap sx={{ flexGrow: 1 }}>
