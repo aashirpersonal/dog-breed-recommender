@@ -20,6 +20,7 @@ export default function RootLayout({
       <body>
         <StyledComponentsRegistry>
           <Header />
+          <SpeedInsights/>
           {children}
           <FuturisticFooter />
         </StyledComponentsRegistry>
