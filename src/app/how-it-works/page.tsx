@@ -109,7 +109,7 @@ export default function HowItWorksPage() {
           Our Scoring System
         </Typography>
         <Typography variant="body1" paragraph align="center">
-          Our sophisticated scoring system considers multiple factors to ensure the best match between you and your future furry friend. Here's how we evaluate each breed:
+          Our sophisticated scoring system considers multiple factors to ensure the best match between you and your future furry friend. Here&apos;s how we evaluate each breed:
         </Typography>
         <Paper elevation={3} sx={{ p: 4, bgcolor: theme.palette.grey[50] }}>
           <List>
@@ -161,7 +161,7 @@ export default function HowItWorksPage() {
             </Typography>
             <Typography variant="body1">
               Where:
-              <br />• Trait Match: How closely a breed's trait aligns with your preference
+              <br />• Trait Match: How closely a breed&apos;s trait aligns with your preference
               <br />• Importance Factor: The weight given to each trait based on your priorities
             </Typography>
           </Paper>

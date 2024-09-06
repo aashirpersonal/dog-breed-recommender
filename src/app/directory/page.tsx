@@ -31,8 +31,8 @@ async function getInitialDogBreeds(page = 1, limit = 12) {
   }
 }
 
-export default async function Directory({ searchParams }) {
-  const page = Number(searchParams.page) || 1
-  const initialDogBreeds = await getInitialDogBreeds(page)
-  return <DirectoryPage initialDogBreeds={initialDogBreeds} />
+export default async function Directory({ searchParams }: { searchParams: Record<string, string | undefined> }) {
+  const page = Number(searchParams.page) || 1;
+  const initialDogBreeds = await getInitialDogBreeds(page);
+  return <DirectoryPage initialDogBreeds={initialDogBreeds} />;
 }

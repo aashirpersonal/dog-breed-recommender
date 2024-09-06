@@ -116,7 +116,7 @@ export default function ResultsPage() {
           Your Top Dog Breed Matches
         </Typography>
         <Typography variant="body1" sx={{ textAlign: 'center' }}>
-          Based on your preferences, we've found these breeds that might be perfect for you.
+          Based on your preferences, we&apos;ve found these breeds that might be perfect for you.
         </Typography>
       </GlassBox>
       <Grid container spacing={3}>

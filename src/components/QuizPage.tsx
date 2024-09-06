@@ -50,10 +50,10 @@ const QuizPage: React.FC = () => {
       if (!response.ok) throw new Error('Failed to fetch recommendations');
       const recommendations = await response.json();
       localStorage.setItem('dogRecommendations', JSON.stringify(recommendations));
-      
+  
       // Simulate a delay for the loading screen
       await new Promise(resolve => setTimeout(resolve, 3000));
-      
+  
       router.push('/results');
     } catch (error) {
       console.error('Error fetching recommendations:', error);
@@ -61,7 +61,7 @@ const QuizPage: React.FC = () => {
       setLoading(false);
     }
   };
-
+    
   return (
     <Container maxWidth="lg" sx={{ py: 8 }}>
       <Grid container spacing={4}>

@@ -213,7 +213,7 @@ export default function HomePage() {
               Our comprehensive database and intelligent matching algorithm consider factors such as size, energy level, grooming needs, and temperament to ensure a perfect fit for your lifestyle and preferences.
             </Typography>
             <Typography variant="body1">
-              Whether you're a first-time dog owner or looking to add another furry friend to your family, we're here to guide you every step of the way.
+              Whether you&apos;re a first-time dog owner or looking to add another furry friend to your family, we&apos;re here to guide you every step of the way.
             </Typography>
           </Grid>
           <Grid item xs={12} md={6}>
