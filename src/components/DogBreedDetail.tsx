@@ -22,54 +22,8 @@ import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import BrushIcon from '@mui/icons-material/Brush';
 import SchoolIcon from '@mui/icons-material/School';
 import HomeIcon from '@mui/icons-material/Home';
+import { DogBreed } from '@/types';  // Ensure this import matches your centralized DogBreed type
 
-
-interface DogBreed {
-  id: string;
-  'Dog Name': string;
-  Temperament: string;
-  'Life Expectancy': string;
-  'Weight': string;
-  'Height': string;
-  FeaturedImageURL: string;
-  AdditionalImageURLs: string;
-  // Compatibility traits
-  Adaptability: string;
-  'Adapts Well To Apartment Living': string;
-  'Good For Novice Owners': string;
-  'Sensitivity Level': string;
-  'Tolerates Being Alone': string;
-  'Tolerates Cold Weather': string;
-  'Tolerates Hot Weather': string;
-  // Friendliness traits
-  'All-around friendliness': string;
-  'Affectionate with Family': string;
-  'Kid-Friendly': string;
-  'Dog Friendly': string;
-  'Friendly Toward Strangers': string;
-  // Health traits
-  'Health And Grooming Needs': string;
-  'Amount Of Shedding': string;
-  'Drooling Potential': string;
-  'Easy To Groom': string;
-  'General Health': string;
-  'Potential For Weight Gain': string;
-  'Size': string;
-  // Trainability traits
-  Trainability: string;
-  'Easy To Train': string;
-  Intelligence: string;
-  'Potential For Mouthiness': string;
-  'Prey Drive': string;
-  'Tendency To Bark Or Howl': string;
-  'Wanderlust Potential': string;
-  // Exercise traits
-  'Exercise needs': string;
-  'Energy Level': string;
-  Intensity: string;
-  'Exercise Needs': string;
-  'Potential For Playfulness': string;
-}
 
 interface DogBreedDetailProps {
   dog: DogBreed | null;
@@ -77,8 +31,8 @@ interface DogBreedDetailProps {
   onClose: () => void;
 }
 
-const TraitBar = ({ trait, value }) => (
-    <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+const TraitBar: React.FC<{ trait: string, value: string }> = ({ trait, value }) => (
+  <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
       <Typography variant="body2" color="text.primary" noWrap sx={{ width: '60%', mr: 1 }}>
         {trait}
       </Typography>
@@ -91,19 +45,19 @@ const TraitBar = ({ trait, value }) => (
     </Box>
   );
 
-  const TraitCategory = ({ title, icon, traits, dog }) => (
+  const TraitCategory: React.FC<{ title: string, icon: React.ReactNode, traits: { name: string, key: keyof DogBreed }[], dog: DogBreed }> = ({ title, icon, traits, dog }) => (
     <Paper elevation={3} sx={{ p: 2, mb: 2 }}>
       <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
         {icon}
         <span style={{ marginLeft: '8px' }}>{title}</span>
       </Typography>
       {traits.map(trait => (
-        <TraitBar
-          key={trait.key}
-          trait={trait.name}
-          value={dog[trait.key]}
-        />
-      ))}
+      <TraitBar
+        key={trait.key}
+        trait={trait.name}
+        value={dog[trait.key] ?? 'N/A'}  // Handle missing or undefined values
+      />
+    ))}
     </Paper>
   );
 
@@ -131,67 +85,69 @@ const TraitBar = ({ trait, value }) => (
     };
   
     const traitCategories = [
-        {
-          title: 'Compatibility',
-          icon: <HomeIcon />,
-          traits: [
-            { name: 'Adaptability', key: 'Adaptability' },
-            { name: 'Apartment Living', key: 'Adapts Well To Apartment Living' },
-            { name: 'Novice Owners', key: 'Good For Novice Dog Owners' },
-            { name: 'Sensitivity', key: 'Sensitivity Level' },
-            { name: 'Alone Tolerance', key: 'Tolerates Being Alone' },
-            { name: 'Cold Tolerance', key: 'Tolerates Cold Weather' },
-            { name: 'Heat Tolerance', key: 'Tolerates Hot Weather' },
-          ],
-        },
-        {
-          title: 'Friendliness',
-          icon: <FavoriteIcon />,
-          traits: [
-            { name: 'Overall Friendliness', key: 'All-around friendliness' },
-            { name: 'Family Affection', key: 'Best Family Dogs' },
-            { name: 'Kid-Friendly', key: 'Kid-Friendly' },
-            { name: 'Dog Friendly', key: 'Dog Friendly' },
-            { name: 'Stranger Friendly', key: 'Friendly Toward Strangers' },
-          ],
-        },
-        {
-          title: 'Health & Grooming',
-          icon: <BrushIcon />,
-          traits: [
-            { name: 'Grooming Needs', key: 'Health And Grooming Needs' },
-            { name: 'Shedding', key: 'Shedding' },
-            { name: 'Drooling', key: 'Drooling Potential' },
-            { name: 'Grooming Ease', key: 'Easy To Groom' },
-            { name: 'General Health', key: 'General Health' },
-            { name: 'Weight Gain', key: 'Potential For Weight Gain' },
-            { name: 'Size', key: 'Size' },
-          ],
-        },
-        {
-          title: 'Trainability',
-          icon: <SchoolIcon />,
-          traits: [
-            { name: 'Trainability', key: 'Trainability' },
-            { name: 'Training Ease', key: 'Easy To Train' },
-            { name: 'Intelligence', key: 'Intelligence' },
-            { name: 'Mouthiness', key: 'Potential For Mouthiness' },
-            { name: 'Prey Drive', key: 'Prey Drive' },
-            { name: 'Barking Tendency', key: 'Tendency To Bark Or Howl' },
-            { name: 'Wanderlust', key: 'Wanderlust Potential' },
-          ],
-        },
-        {
-          title: 'Exercise Needs',
-          icon: <FitnessCenterIcon />,
-          traits: [
-            { name: 'Energy Level', key: 'High Energy Level' },
-            { name: 'Exercise Needs', key: 'Exercise Needs' },
-            { name: 'Intensity', key: 'Intensity' },
-            { name: 'Playfulness', key: 'Potential For Playfulness' },
-          ],
-        },
-      ];
+      {
+        title: 'Compatibility',
+        icon: <HomeIcon />,
+        traits: [
+          { name: 'Adaptability', key: 'Adaptability' as keyof DogBreed },
+          { name: 'Apartment Living', key: 'Adapts Well To Apartment Living' as keyof DogBreed },
+          { name: 'Novice Owners', key: 'Good For Novice Dog Owners' as keyof DogBreed },
+          { name: 'Sensitivity', key: 'Sensitivity Level' as keyof DogBreed },
+          { name: 'Alone Tolerance', key: 'Tolerates Being Alone' as keyof DogBreed },
+          { name: 'Cold Tolerance', key: 'Tolerates Cold Weather' as keyof DogBreed },
+          { name: 'Heat Tolerance', key: 'Tolerates Hot Weather' as keyof DogBreed },
+        ],
+      },
+      {
+        title: 'Friendliness',
+        icon: <FavoriteIcon />,
+        traits: [
+          { name: 'Overall Friendliness', key: 'All-around friendliness' as keyof DogBreed },
+          { name: 'Family Affection', key: 'Best Family Dogs' as keyof DogBreed },
+          { name: 'Kid-Friendly', key: 'Kid-Friendly' as keyof DogBreed },
+          { name: 'Dog Friendly', key: 'Dog Friendly' as keyof DogBreed },
+          { name: 'Stranger Friendly', key: 'Friendly Toward Strangers' as keyof DogBreed },
+        ],
+      },
+      {
+        title: 'Health & Grooming',
+        icon: <BrushIcon />,
+        traits: [
+          { name: 'Grooming Needs', key: 'Health And Grooming Needs' as keyof DogBreed },
+          { name: 'Shedding', key: 'Shedding' as keyof DogBreed },
+          { name: 'Drooling', key: 'Drooling Potential' as keyof DogBreed },
+          { name: 'Grooming Ease', key: 'Easy To Groom' as keyof DogBreed },
+          { name: 'General Health', key: 'General Health' as keyof DogBreed },
+          { name: 'Weight Gain', key: 'Potential For Weight Gain' as keyof DogBreed },
+          { name: 'Size', key: 'Size' as keyof DogBreed },
+        ],
+      },
+      {
+        title: 'Trainability',
+        icon: <SchoolIcon />,
+        traits: [
+          { name: 'Trainability', key: 'Trainability' as keyof DogBreed },
+          { name: 'Training Ease', key: 'Easy To Train' as keyof DogBreed },
+          { name: 'Intelligence', key: 'Intelligence' as keyof DogBreed },
+          { name: 'Mouthiness', key: 'Potential For Mouthiness' as keyof DogBreed },
+          { name: 'Prey Drive', key: 'Prey Drive' as keyof DogBreed },
+          { name: 'Barking Tendency', key: 'Tendency To Bark Or Howl' as keyof DogBreed },
+          { name: 'Wanderlust', key: 'Wanderlust Potential' as keyof DogBreed },
+        ],
+      },
+      {
+        title: 'Exercise Needs',
+        icon: <FitnessCenterIcon />,
+        traits: [
+          { name: 'Energy Level', key: 'High Energy Level' as keyof DogBreed },
+          { name: 'Exercise Needs', key: 'Exercise Needs' as keyof DogBreed },
+          { name: 'Intensity', key: 'Intensity' as keyof DogBreed },
+          { name: 'Playfulness', key: 'Potential For Playfulness' as keyof DogBreed },
+        ],
+      },
+    ];
+    
+    
     
 
       return (

@@ -24,20 +24,15 @@ import BrushIcon from '@mui/icons-material/Brush';
 import SchoolIcon from '@mui/icons-material/School';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import DogBreedDetail from '@/components/DogBreedDetail';
+import { DogBreed } from '@/types';  // Adjust the import path if needed
 
-interface DogBreed {
-  id: string;
-  'Dog Name': string;
-  Temperament: string;
-  Adaptability: string;
-  'All-around friendliness': string;
-  'Exercise needs': string;
-  'Health And Grooming Needs': string;
-  Trainability: string;
-  FeaturedImageURL: string;
-  'Officially Recognized': string;
+// Define the comprehensive DogBreed interface
+
+interface TraitBarProps {
+  trait: string;
+  value: string;
+  icon: React.ReactNode;
 }
-
 const StyledCard = styled(Card)({
   display: 'flex',
   flexDirection: 'column',
@@ -68,7 +63,7 @@ const GlassBox = styled(Box)(({ theme }) => ({
   border: '1px solid rgba(255, 255, 255, 0.3)',
 }));
 
-const TraitBar = ({ trait, value, icon }) => (
+const TraitBar: React.FC<TraitBarProps> = ({ trait, value, icon }) => (
   <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
     {icon}
     <Typography variant="body2" noWrap sx={{ width: '30%', ml: 1 }}>{trait}</Typography>
@@ -81,10 +76,10 @@ const TraitBar = ({ trait, value, icon }) => (
   </Box>
 );
 
-const traits = [
+const traits: { name: string; key: keyof DogBreed; icon: React.ReactNode }[] = [
   { name: 'Adapt', key: 'Adaptability', icon: <PetsIcon sx={{ mr: 1 }} /> },
   { name: 'Friendly', key: 'All-around friendliness', icon: <FavoriteIcon sx={{ mr: 1 }} /> },
-  { name: 'Exercise', key: 'Exercise needs', icon: <FitnessCenterIcon sx={{ mr: 1 }} /> },
+  { name: 'Exercise', key: 'Exercise Needs', icon: <FitnessCenterIcon sx={{ mr: 1 }} /> },
   { name: 'Groom', key: 'Health And Grooming Needs', icon: <BrushIcon sx={{ mr: 1 }} /> },
   { name: 'Train', key: 'Trainability', icon: <SchoolIcon sx={{ mr: 1 }} /> },
 ];
@@ -121,7 +116,7 @@ export default function ResultsPage() {
       </GlassBox>
       <Grid container spacing={3}>
         {recommendations.map((dog) => (
-          <Grid item xs={12} sm={6} md={4} lg={3} key={dog.id}>
+          <Grid item xs={12} sm={6} md={4} lg={3} key={dog._id}>
             <StyledCard>
               <StyledCardMedia
                 image={dog.FeaturedImageURL}
@@ -148,7 +143,7 @@ export default function ResultsPage() {
                   <TraitBar 
                     key={trait.key} 
                     trait={trait.name} 
-                    value={dog[trait.key]} 
+                    value={dog[trait.key] ?? '0'}  // Use '0' as a fallback value
                     icon={trait.icon} 
                   />
                 ))}

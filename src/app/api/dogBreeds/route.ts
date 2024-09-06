@@ -1,7 +1,9 @@
 // src/app/api/dogBreeds/route.ts
 import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
+import { DogBreed } from '@/types';  // Adjust the import path if needed
 
+// Update the DogBreed type in the getInitialDogBreeds function
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const page = parseInt(searchParams.get('page') || '1', 10);

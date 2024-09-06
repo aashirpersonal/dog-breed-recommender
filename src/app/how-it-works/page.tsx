@@ -30,7 +30,18 @@ import {
     School as SchoolIcon,
 } from '@mui/icons-material';
 
-const StepCard = ({ icon, title, description }) => {
+interface StepCardProps {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+}
+// Define the props type for ScoringFactor component
+interface ScoringFactorProps {
+  icon: React.ReactNode;
+  factor: string;
+  description: string;
+}
+const StepCard: React.FC<StepCardProps> = ({ icon, title, description }) => {
   const theme = useTheme();
   return (
     <Paper elevation={3} sx={{ 
@@ -55,7 +66,7 @@ const StepCard = ({ icon, title, description }) => {
   );
 };
 
-const ScoringFactor = ({ icon, factor, description }) => (
+const ScoringFactor: React.FC<ScoringFactorProps> = ({ icon, factor, description }) => (
   <ListItem>
     <ListItemIcon>
       {icon}

@@ -24,7 +24,14 @@ import {
   EmojiNature as EmojiNatureIcon
 } from '@mui/icons-material';
 
-const FeatureCard = ({ icon, title, description }) => {
+// Define the types for the FeatureCard props
+interface FeatureCardProps {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+}
+
+const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description }) => {
   const theme = useTheme();
   return (
     <Card 

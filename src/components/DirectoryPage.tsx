@@ -1,10 +1,11 @@
 // src/components/DirectoryPage.tsx
-'use client'
+
+'use client';
 
 import React, { useState, useEffect, useCallback, Suspense } from 'react';
-import { 
-  Typography, 
-  Container, 
+import {
+  Typography,
+  Container,
   Grid,
   Card,
   CardContent,
@@ -31,23 +32,11 @@ import VerifiedIcon from '@mui/icons-material/Verified';
 import { styled } from '@mui/system';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
+import { DogBreed } from '@/types';  // Ensure this import matches your centralized DogBreed type
 
 const DogBreedDetail = dynamic(() => import('./DogBreedDetail'), {
   loading: () => <CircularProgress />,
 });
-
-interface DogBreed {
-  _id: string;
-  'Dog Name': string;
-  Temperament: string;
-  Adaptability: string;
-  'All-around friendliness': string;
-  'Exercise needs': string;
-  'Health And Grooming Needs': string;
-  Trainability: string;
-  FeaturedImageURL: string;
-  'Officially Recognized': string;
-}
 
 interface ApiResponse {
   dogBreeds: DogBreed[];
@@ -85,25 +74,31 @@ const StyledCardContent = styled(CardContent)({
   padding: '12px',
 });
 
-const TraitBar = ({ trait, value, icon }) => (
+interface TraitBarProps {
+  trait: string;
+  value: string | undefined;
+  icon: React.ReactNode;
+}
+
+const TraitBar: React.FC<TraitBarProps> = ({ trait, value, icon }) => (
   <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
     {icon}
     <Typography variant="body2" noWrap sx={{ width: '30%', ml: 1 }}>{trait}</Typography>
-    <LinearProgress 
-      variant="determinate" 
-      value={Number(value) * 20} 
-      sx={{ flexGrow: 1, mr: 1 }} 
+    <LinearProgress
+      variant="determinate"
+      value={Number(value) * 20}
+      sx={{ flexGrow: 1, mr: 1 }}
     />
-    <Typography variant="body2">{value}/5</Typography>
+    <Typography variant="body2">{value ? `${value}/5` : 'N/A'}</Typography>
   </Box>
 );
 
 const traits = [
-  { name: 'Adapt', key: 'Adaptability', icon: <PetsIcon sx={{ mr: 1 }} /> },
-  { name: 'Friendly', key: 'All-around friendliness', icon: <FavoriteIcon sx={{ mr: 1 }} /> },
-  { name: 'Exercise', key: 'Exercise needs', icon: <FitnessCenterIcon sx={{ mr: 1 }} /> },
-  { name: 'Groom', key: 'Health And Grooming Needs', icon: <BrushIcon sx={{ mr: 1 }} /> },
-  { name: 'Train', key: 'Trainability', icon: <SchoolIcon sx={{ mr: 1 }} /> },
+  { name: 'Adaptability', key: 'Adaptability', icon: <PetsIcon sx={{ mr: 1 }} /> },
+  { name: 'Friendliness', key: 'All-around friendliness', icon: <FavoriteIcon sx={{ mr: 1 }} /> },
+  { name: 'Exercise Needs', key: 'Exercise Needs', icon: <FitnessCenterIcon sx={{ mr: 1 }} /> },
+  { name: 'Grooming Needs', key: 'Health And Grooming Needs', icon: <BrushIcon sx={{ mr: 1 }} /> },
+  { name: 'Trainability', key: 'Trainability', icon: <SchoolIcon sx={{ mr: 1 }} /> },
 ];
 
 const LoadingSkeleton = () => (
@@ -230,13 +225,13 @@ export default function DirectoryPage({ initialDogBreeds }: { initialDogBreeds: 
                   {dog.Temperament}
                 </Typography>
                 {traits.map(trait => (
-                  <TraitBar 
-                    key={trait.key} 
-                    trait={trait.name} 
-                    value={dog[trait.key]} 
-                    icon={trait.icon} 
-                  />
-                ))}
+  <TraitBar 
+    key={trait.key} 
+    trait={trait.name} 
+    value={dog[trait.key as keyof DogBreed] ?? 'N/A'} // Correct dynamic indexing with keyof
+    icon={trait.icon} 
+  />
+))}
               </StyledCardContent>
             </StyledCard>
           </Fade>
