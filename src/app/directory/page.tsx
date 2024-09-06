@@ -4,14 +4,14 @@ import { Metadata } from 'next';
 import DirectoryPage from '@/components/DirectoryPage';
 import clientPromise from '@/lib/mongodb';
 import { DogBreed } from '@/types';  // Adjust the import path if needed
+import { PaginatedDogBreeds } from '@/types';
 
 export const metadata: Metadata = {
   title: 'Dog Breed Directory - Explore All Breeds',
   description: 'Browse our comprehensive directory of dog breeds to find detailed information on various canine companions.',
 };
 
-// Function to get initial dog breeds from the database
-async function getInitialDogBreeds(page = 1, limit = 12): Promise<{ dogBreeds: DogBreed[]; total: number; page: number; limit: number; totalPages: number }> {
+async function getInitialDogBreeds(page = 1, limit = 12): Promise<PaginatedDogBreeds> {
   const client = await clientPromise;
   const db = client.db("dogBreedRecommender");
   const collection = db.collection("dogBreeds");
@@ -20,7 +20,6 @@ async function getInitialDogBreeds(page = 1, limit = 12): Promise<{ dogBreeds: D
   const dogBreeds = await collection.find({}).skip(skip).limit(limit).toArray();
   const total = await collection.countDocuments({});
 
-  // Ensure that you map all the fields to match the DogBreed type
   const serializedDogBreeds: DogBreed[] = dogBreeds.map(breed => ({
     _id: breed._id.toString(),
     'Dog Name': breed['Dog Name'],
@@ -44,7 +43,6 @@ async function getInitialDogBreeds(page = 1, limit = 12): Promise<{ dogBreeds: D
     'General Health': breed['General Health'],
     'Potential For Weight Gain': breed['Potential For Weight Gain'],
     Size: breed.Size,
-    Weight: breed.Weight,  // Include the missing Weight field
     Trainability: breed.Trainability,
     'Easy To Train': breed['Easy To Train'],
     Intelligence: breed.Intelligence,
@@ -59,8 +57,9 @@ async function getInitialDogBreeds(page = 1, limit = 12): Promise<{ dogBreeds: D
     'Officially Recognized': breed['Officially Recognized'],
     FeaturedImageURL: breed.FeaturedImageURL,
     AdditionalImageURLs: breed.AdditionalImageURLs,
-    'Life Expectancy': breed['Life Expectancy'], // Add missing field
-    'Height': breed['Height'],                   // Add missing field
+    'Life Expectancy': breed['Life Expectancy'],
+    'Height': breed['Height'],
+    'Weight': breed['Weight'],
   }));
 
   return {
@@ -72,8 +71,7 @@ async function getInitialDogBreeds(page = 1, limit = 12): Promise<{ dogBreeds: D
   };
 }
 
-// Main directory page component to display breeds
-export default async function Directory({ searchParams }: { searchParams: Record<string, string | undefined> }) {
+export default async function Directory({ searchParams }: { searchParams: { page?: string } }) {
   const page = Number(searchParams.page) || 1;
   const initialDogBreeds = await getInitialDogBreeds(page);
   return <DirectoryPage initialDogBreeds={initialDogBreeds} />;

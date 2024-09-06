@@ -44,15 +44,10 @@ export async function GET(request: Request) {
     });
   } catch (e) {
     console.error('Error fetching dog breeds:', e);
-    return NextResponse.json(
-      { 
-        error: 'Failed to fetch dog breeds', 
-        details: e instanceof Error ? e.message : 'Unknown error'
-      }, 
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to fetch dog breeds' }, { status: 500 });
   }
 }
+
 
 export async function POST(request: Request) {
   const quizAnswers = await request.json();

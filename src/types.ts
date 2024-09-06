@@ -41,4 +41,10 @@ export interface DogBreed {
     'Height': string;
     'Weight': string;
   }
-  
+  export interface PaginatedDogBreeds {
+    dogBreeds: DogBreed[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }

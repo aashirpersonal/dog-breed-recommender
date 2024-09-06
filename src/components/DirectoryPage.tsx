@@ -32,7 +32,7 @@ import VerifiedIcon from '@mui/icons-material/Verified';
 import { styled } from '@mui/system';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
-import { DogBreed } from '@/types';  // Ensure this import matches your centralized DogBreed type
+import { DogBreed, PaginatedDogBreeds } from '@/types';  // Import both types
 
 const DogBreedDetail = dynamic(() => import('./DogBreedDetail'), {
   loading: () => <CircularProgress />,
@@ -114,7 +114,7 @@ const LoadingSkeleton = () => (
   </Card>
 );
 
-export default function DirectoryPage({ initialDogBreeds }: { initialDogBreeds: ApiResponse }) {
+export default function DirectoryPage({ initialDogBreeds }: { initialDogBreeds: PaginatedDogBreeds }) {
   const [dogs, setDogs] = useState<DogBreed[]>(initialDogBreeds.dogBreeds);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -138,7 +138,7 @@ export default function DirectoryPage({ initialDogBreeds }: { initialDogBreeds: 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      const data: ApiResponse = await response.json();
+      const data: PaginatedDogBreeds = await response.json();
       setDogs(data.dogBreeds);
       setTotalPages(data.totalPages);
       setPage(data.page);
@@ -242,7 +242,7 @@ export default function DirectoryPage({ initialDogBreeds }: { initialDogBreeds: 
       </GridContainer>
 
       <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-        <Pagination 
+        <Pagination  
           count={totalPages} 
           page={page} 
           onChange={handlePageChange}
