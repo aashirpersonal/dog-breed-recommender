@@ -4,7 +4,7 @@ import { Metadata } from 'next'
 import StyledComponentsRegistry from '@/lib/registry'
 import Header from '@/components/Header'
 import FuturisticFooter from '@/components/FuturisticFooter';
-
+import { SpeedInsights } from "@vercel/speed-insights/next"
 export const metadata: Metadata = {
   title: 'Dog Breed Recommender',
   description: 'Find your perfect canine companion',
