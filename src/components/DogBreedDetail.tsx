@@ -137,7 +137,7 @@ const TraitBar = ({ trait, value }) => (
           traits: [
             { name: 'Adaptability', key: 'Adaptability' },
             { name: 'Apartment Living', key: 'Adapts Well To Apartment Living' },
-            { name: 'Novice Owners', key: 'Good For Novice Owners' },
+            { name: 'Novice Owners', key: 'Good For Novice Dog Owners' },
             { name: 'Sensitivity', key: 'Sensitivity Level' },
             { name: 'Alone Tolerance', key: 'Tolerates Being Alone' },
             { name: 'Cold Tolerance', key: 'Tolerates Cold Weather' },
@@ -149,7 +149,7 @@ const TraitBar = ({ trait, value }) => (
           icon: <FavoriteIcon />,
           traits: [
             { name: 'Overall Friendliness', key: 'All-around friendliness' },
-            { name: 'Family Affection', key: 'Affectionate with Family' },
+            { name: 'Family Affection', key: 'Best Family Dogs' },
             { name: 'Kid-Friendly', key: 'Kid-Friendly' },
             { name: 'Dog Friendly', key: 'Dog Friendly' },
             { name: 'Stranger Friendly', key: 'Friendly Toward Strangers' },
@@ -160,7 +160,7 @@ const TraitBar = ({ trait, value }) => (
           icon: <BrushIcon />,
           traits: [
             { name: 'Grooming Needs', key: 'Health And Grooming Needs' },
-            { name: 'Shedding', key: 'Amount Of Shedding' },
+            { name: 'Shedding', key: 'Shedding' },
             { name: 'Drooling', key: 'Drooling Potential' },
             { name: 'Grooming Ease', key: 'Easy To Groom' },
             { name: 'General Health', key: 'General Health' },
@@ -185,7 +185,7 @@ const TraitBar = ({ trait, value }) => (
           title: 'Exercise Needs',
           icon: <FitnessCenterIcon />,
           traits: [
-            { name: 'Energy Level', key: 'Energy Level' },
+            { name: 'Energy Level', key: 'High Energy Level' },
             { name: 'Exercise Needs', key: 'Exercise Needs' },
             { name: 'Intensity', key: 'Intensity' },
             { name: 'Playfulness', key: 'Potential For Playfulness' },

@@ -3,6 +3,7 @@
 import { Metadata } from 'next'
 import StyledComponentsRegistry from '@/lib/registry'
 import Header from '@/components/Header'
+import FuturisticFooter from '@/components/FuturisticFooter';
 
 export const metadata: Metadata = {
   title: 'Dog Breed Recommender',
@@ -20,6 +21,7 @@ export default function RootLayout({
         <StyledComponentsRegistry>
           <Header />
           {children}
+          <FuturisticFooter />
         </StyledComponentsRegistry>
       </body>
     </html>
