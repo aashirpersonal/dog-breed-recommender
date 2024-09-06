@@ -148,8 +148,8 @@ function calculateBreedScore(breed: any, preferences: any): number {
   score += toNumber(breed['Trainability']) * 1.5;
 
   // 3. Activity level (High Energy Level, Exercise Needs, Intensity)
-  const activityMap = { 'Low': 1, 'Moderate': 3, 'High': 5 };
-  const preferredActivity = activityMap[preferences.activity_level] || 3;
+  const activityMap: { [key: string]: number } = { 'Low': 1, 'Moderate': 3, 'High': 5 };
+  const preferredActivity = activityMap[preferences.activity_level as keyof typeof activityMap] || 3;
   score += calculateMatchScore(toNumber(breed['High Energy Level']), preferredActivity, 2);
   score += calculateMatchScore(toNumber(breed['Exercise Needs']), preferredActivity, 2);
 
@@ -164,23 +164,23 @@ function calculateBreedScore(breed: any, preferences: any): number {
     score += toNumber(breed['Dog Friendly']) * 1.5;
   }
   if (preferences.other_pets === 'Cats') {
-    score += toNumber(breed['Dog Friendly']) * 1.5;
+    score += toNumber(breed['Dog Friendly']) * 1.5;  // Assuming dog-friendly dogs are generally good with cats.
   }
 
   // 6. Grooming preference (Health And Grooming Needs and Easy To Groom)
-  const groomingMap = { 'Low maintenance': 1, 'Regular grooming': 3, 'Extensive grooming': 5 };
-  const preferredGrooming = groomingMap[preferences.grooming_preference] || 3;
+  const groomingMap: { [key: string]: number } = { 'Low maintenance': 1, 'Regular grooming': 3, 'Extensive grooming': 5 };
+  const preferredGrooming = groomingMap[preferences.grooming_preference as keyof typeof groomingMap] || 3;
   score += calculateMatchScore(toNumber(breed['Health And Grooming Needs']), preferredGrooming, 2);
   score += calculateMatchScore(toNumber(breed['Easy To Groom']), preferredGrooming, 1.5);
 
   // 7. Shedding tolerance (Shedding)
-  const sheddingMap = { 'Prefer no shedding': 1, 'Can tolerate some shedding': 3, 'Don’t mind heavy shedding': 5 };
-  const preferredShedding = sheddingMap[preferences.shedding_tolerance] || 3;
+  const sheddingMap: { [key: string]: number } = { 'Prefer no shedding': 1, 'Can tolerate some shedding': 3, 'Don’t mind heavy shedding': 5 };
+  const preferredShedding = sheddingMap[preferences.shedding_tolerance as keyof typeof sheddingMap] || 3;
   score += calculateMatchScore(toNumber(breed['Shedding']), preferredShedding, 2);
 
   // 8. Barking tolerance (Tendency To Bark Or Howl)
-  const barkingMap = { 'Prefer minimal barking': 1, 'Can tolerate some barking': 3, 'Don’t mind frequent barking': 5 };
-  const preferredBarking = barkingMap[preferences.barking_tolerance] || 3;
+  const barkingMap: { [key: string]: number } = { 'Prefer minimal barking': 1, 'Can tolerate some barking': 3, 'Don’t mind frequent barking': 5 };
+  const preferredBarking = barkingMap[preferences.barking_tolerance as keyof typeof barkingMap] || 3;
   score += calculateMatchScore(toNumber(breed['Tendency To Bark Or Howl']), preferredBarking, 1.5);
 
   // 9. Climate (Tolerates Cold Weather and Tolerates Hot Weather)
@@ -193,7 +193,7 @@ function calculateBreedScore(breed: any, preferences: any): number {
 
   // 10. Health concerns (General Health, Shedding, Drooling Potential)
   if (preferences.health_concerns === 'Need a hypoallergenic dog') {
-    score += (5 - toNumber(breed['Shedding'])) * 2;
+    score += (5 - toNumber(breed['Shedding'])) * 2;  // Inverse shedding score for hypoallergenic.
   }
   if (preferences.health_concerns === 'Prefer minimal health issues') {
     score += toNumber(breed['General Health']) * 2;
